@@ -68,7 +68,7 @@ const httpServer = createServer(app)
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://your-app.netlify.app',
+  'https://innoquiz.netlify.app',
   /\.netlify\.app$/,
 ]
 
