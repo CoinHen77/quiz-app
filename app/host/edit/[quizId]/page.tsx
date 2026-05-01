@@ -4,16 +4,13 @@ import { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createQuiz, getQuiz, saveQuiz } from '@/lib/quizzes'
 import type { Question } from '@/lib/firebase'
+import { Logo, Panel, BlockButton, Chip, OPTION_PALETTES, OPTION_LABELS } from '@/components/gameshow'
 
 function emptyQuestion(): Question {
   return { order: 0, text: '', options: ['', ''], correctIndex: 0, timeLimitSeconds: 20 }
 }
 
-export default function EditQuizPage({
-  params,
-}: {
-  params: Promise<{ quizId: string }>
-}) {
+export default function EditQuizPage({ params }: { params: Promise<{ quizId: string }> }) {
   const { quizId } = use(params)
   const isNew = quizId === 'new'
   const router = useRouter()
@@ -37,43 +34,31 @@ export default function EditQuizPage({
   function updateQuestion(qi: number, patch: Partial<Question>) {
     setQuestions(qs => qs.map((q, i) => i === qi ? { ...q, ...patch } : q))
   }
-
   function updateOption(qi: number, oi: number, value: string) {
     setQuestions(qs => qs.map((q, i) => {
       if (i !== qi) return q
-      const opts = [...q.options]
-      opts[oi] = value
+      const opts = [...q.options]; opts[oi] = value
       return { ...q, options: opts }
     }))
   }
-
   function addOption(qi: number) {
     setQuestions(qs => qs.map((q, i) => {
       if (i !== qi || q.options.length >= 4) return q
       return { ...q, options: [...q.options, ''] }
     }))
   }
-
   function removeOption(qi: number, oi: number) {
     setQuestions(qs => qs.map((q, i) => {
       if (i !== qi || q.options.length <= 2) return q
       const opts = q.options.filter((_, j) => j !== oi)
-      return {
-        ...q,
-        options: opts,
-        correctIndex: q.correctIndex >= opts.length ? 0 : q.correctIndex,
-      }
+      return { ...q, options: opts, correctIndex: q.correctIndex >= opts.length ? 0 : q.correctIndex }
     }))
   }
-
   function addQuestion() {
     setQuestions(qs => [...qs, { ...emptyQuestion(), order: qs.length }])
   }
-
   function removeQuestion(qi: number) {
-    setQuestions(qs =>
-      qs.filter((_, i) => i !== qi).map((q, i) => ({ ...q, order: i }))
-    )
+    setQuestions(qs => qs.filter((_, i) => i !== qi).map((q, i) => ({ ...q, order: i })))
   }
 
   async function handleSave() {
@@ -82,15 +67,11 @@ export default function EditQuizPage({
       if (!q.text.trim()) { setError(`Question ${i + 1} needs a text`); return }
       if (q.options.some(o => !o.trim())) { setError(`Question ${i + 1} has a blank option`); return }
     }
-    setError(null)
-    setSaving(true)
+    setError(null); setSaving(true)
     try {
       const normalized = questions.map((q, i) => ({ ...q, order: i }))
-      if (isNew) {
-        await createQuiz({ title: title.trim(), questions: normalized })
-      } else {
-        await saveQuiz(quizId, { title: title.trim(), questions: normalized })
-      }
+      if (isNew) await createQuiz({ title: title.trim(), questions: normalized })
+      else await saveQuiz(quizId, { title: title.trim(), questions: normalized })
       router.push('/host')
     } catch {
       setError('Save failed — check your Firebase connection.')
@@ -100,138 +81,194 @@ export default function EditQuizPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <p className="text-gray-400">Loading quiz…</p>
+      <main className="min-h-screen flex items-center justify-center font-bungee" style={{ background: '#3a1f0a', color: '#ffd23f' }}>
+        LOADING QUIZ…
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white pb-16">
-      <div className="max-w-2xl mx-auto p-8 space-y-8">
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{isNew ? 'New Quiz' : 'Edit Quiz'}</h1>
-          <button
-            onClick={() => router.push('/host')}
-            className="text-gray-400 hover:text-white text-sm transition-colors"
-          >
-            ← Back
-          </button>
+    <main className="min-h-screen pb-16" style={{ background: '#3a1f0a' }}>
+      {/* Header bar */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 10,
+        background: '#3a1f0a', borderBottom: '4px solid #ffd23f',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: 64,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <BlockButton size="sm" variant="cream" onClick={() => router.push('/host')}>◀ BACK</BlockButton>
+          <Logo size={32} />
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {error && (
+            <div className="font-bungee" style={{ fontSize: 12, color: '#c44b6a', letterSpacing: '0.1em' }}>{error}</div>
+          )}
+          <BlockButton size="sm" variant="gold" onClick={handleSave} disabled={saving}>
+            {saving ? 'SAVING…' : 'SAVE ▶'}
+          </BlockButton>
+        </div>
+      </div>
 
-        {/* Title */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-400">Quiz Title</label>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Quiz title */}
+        <Panel variant="cream" style={{ padding: 16 }}>
+          <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', opacity: 0.7, marginBottom: 6, color: '#3a1f0a' }}>
+            QUIZ TITLE
+          </div>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="e.g. Company Trivia Night"
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            placeholder="e.g. COMPANY TRIVIA NIGHT"
+            className="font-bungee"
+            style={{
+              width: '100%', background: '#fff', border: '4px solid #3a1f0a', borderRadius: 8,
+              padding: '10px 14px', fontSize: 22, color: '#3a1f0a', letterSpacing: '0.04em',
+              outline: 'none', boxSizing: 'border-box',
+            }}
           />
-        </div>
+        </Panel>
 
         {/* Questions */}
-        <div className="space-y-5">
-          {questions.map((q, qi) => (
-            <div
-              key={qi}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-indigo-400 text-sm">Question {qi + 1}</span>
+        {questions.map((q, qi) => (
+          <Panel key={qi} variant="cream" style={{ padding: 16 }}>
+            {/* Question header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div
+                className="font-bungee"
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: '#f56b1f', color: '#f7e9c4',
+                  border: '3px solid #3a1f0a',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, flexShrink: 0,
+                }}
+              >
+                {qi + 1}
+              </div>
+              <div className="font-bungee" style={{ flex: 1, fontSize: 14, letterSpacing: '0.15em', color: '#3a1f0a', opacity: 0.6 }}>
+                QUESTION {qi + 1}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Chip variant="gold" style={{ fontSize: 10 }}>{OPTION_LABELS[q.correctIndex]} ★</Chip>
                 {questions.length > 1 && (
                   <button
                     onClick={() => removeQuestion(qi)}
-                    className="text-red-500 hover:text-red-400 text-xs transition-colors"
+                    className="font-bungee"
+                    style={{ color: '#c44b6a', fontSize: 12, letterSpacing: '0.1em', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    Remove
+                    REMOVE
                   </button>
                 )}
               </div>
+            </div>
 
-              <input
-                value={q.text}
-                onChange={e => updateQuestion(qi, { text: e.target.value })}
-                placeholder="Enter question text"
-                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
-              />
+            {/* Question text */}
+            <textarea
+              value={q.text}
+              onChange={e => updateQuestion(qi, { text: e.target.value })}
+              placeholder="Enter question text"
+              rows={2}
+              className="font-inter"
+              style={{
+                width: '100%', background: '#fff', border: '4px solid #3a1f0a', borderRadius: 8,
+                padding: '10px 14px', fontSize: 15, color: '#3a1f0a', fontWeight: 500,
+                outline: 'none', boxSizing: 'border-box', resize: 'vertical', marginBottom: 10,
+              }}
+            />
 
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Options — circle to mark correct
-                </p>
-                {q.options.map((opt, oi) => (
-                  <div key={oi} className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => updateQuestion(qi, { correctIndex: oi })}
-                      className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors ${
-                        q.correctIndex === oi
-                          ? 'border-green-500 bg-green-500'
-                          : 'border-gray-600 hover:border-green-500'
-                      }`}
-                    />
-                    <input
-                      value={opt}
-                      onChange={e => updateOption(qi, oi, e.target.value)}
-                      placeholder={`Option ${oi + 1}`}
-                      className="flex-1 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                    {q.options.length > 2 && (
-                      <button
-                        onClick={() => removeOption(qi, oi)}
-                        className="text-gray-600 hover:text-red-400 text-sm w-5 transition-colors"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {q.options.length < 4 && (
+            {/* Options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+              {q.options.map((opt, oi) => (
+                <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
-                    onClick={() => addOption(qi)}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm mt-1 transition-colors"
+                    type="button"
+                    onClick={() => updateQuestion(qi, { correctIndex: oi })}
+                    style={{
+                      width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                      background: q.correctIndex === oi ? '#ffd23f' : '#fff',
+                      border: `3px solid ${q.correctIndex === oi ? '#3a1f0a' : '#ccc'}`,
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
+                    }}
                   >
-                    + Add option
+                    {q.correctIndex === oi && '★'}
                   </button>
-                )}
-              </div>
+                  <div
+                    className="font-bungee"
+                    style={{
+                      width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                      background: OPTION_PALETTES[oi], color: oi === 2 ? '#3a1f0a' : '#f7e9c4',
+                      border: '3px solid #3a1f0a',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
+                    }}
+                  >
+                    {OPTION_LABELS[oi]}
+                  </div>
+                  <input
+                    value={opt}
+                    onChange={e => updateOption(qi, oi, e.target.value)}
+                    placeholder={`Option ${oi + 1}`}
+                    className="font-inter"
+                    style={{
+                      flex: 1, background: '#fff', border: '3px solid #3a1f0a', borderRadius: 6,
+                      padding: '8px 12px', fontSize: 14, color: '#3a1f0a', fontWeight: 500,
+                      outline: 'none',
+                    }}
+                  />
+                  {q.options.length > 2 && (
+                    <button
+                      onClick={() => removeOption(qi, oi)}
+                      style={{ color: '#c44b6a', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'monospace' }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
 
-              <div className="flex items-center gap-3">
-                <label className="text-sm text-gray-400">Time limit</label>
+            {/* Add option + time limit row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {q.options.length < 4 ? (
+                <button
+                  onClick={() => addOption(qi)}
+                  className="font-bungee"
+                  style={{ color: '#f56b1f', fontSize: 12, letterSpacing: '0.15em', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  + ADD OPTION
+                </button>
+              ) : <span />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.2em', color: '#3a1f0a', opacity: 0.7 }}>TIME</div>
                 <select
                   value={q.timeLimitSeconds}
                   onChange={e => updateQuestion(qi, { timeLimitSeconds: Number(e.target.value) })}
-                  className="px-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none"
+                  className="font-bungee"
+                  style={{
+                    background: '#ffd23f', border: '3px solid #3a1f0a', borderRadius: 6,
+                    padding: '6px 10px', fontSize: 13, color: '#3a1f0a', cursor: 'pointer', outline: 'none',
+                  }}
                 >
-                  {[10, 15, 20, 30, 45, 60].map(t => (
-                    <option key={t} value={t}>{t}s</option>
-                  ))}
+                  {[10, 15, 20, 30, 45, 60].map(t => <option key={t} value={t}>{t}s</option>)}
                 </select>
               </div>
             </div>
-          ))}
-        </div>
+          </Panel>
+        ))}
 
+        {/* Add question */}
         <button
           onClick={addQuestion}
-          className="w-full py-3 border-2 border-dashed border-gray-700 hover:border-indigo-500 text-gray-400 hover:text-indigo-400 rounded-xl transition-colors"
+          className="font-bungee"
+          style={{
+            border: '3px dashed #ffd23f', borderRadius: 10, padding: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            color: '#ffd23f', fontSize: 14, letterSpacing: '0.3em',
+            background: 'none', cursor: 'pointer', width: '100%',
+          }}
         >
-          + Add Question
-        </button>
-
-        {error && (
-          <p className="text-red-400 text-sm text-center">{error}</p>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-semibold text-white transition-colors"
-        >
-          {saving ? 'Saving…' : 'Save Quiz'}
+          + ADD QUESTION
         </button>
       </div>
     </main>

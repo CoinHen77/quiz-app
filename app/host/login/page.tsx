@@ -2,42 +2,62 @@
 
 import { useActionState } from 'react'
 import { verifyPassword } from './actions'
+import { Sunburst, Logo, Panel, BlockButton, Bulbs, Chip } from '@/components/gameshow'
 
 export default function HostLoginPage() {
   const [error, action, isPending] = useActionState(verifyPassword, null)
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-950">
-      <form
-        action={action}
-        className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm space-y-5 shadow-2xl"
-      >
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-white">Host Login</h1>
-          <p className="text-gray-400 text-sm">Enter the host password to continue</p>
-        </div>
+    <main className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-6" style={{ background: '#3a1f0a' }}>
+      <Sunburst />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-          autoFocus
-          className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
-        />
+      <div className="absolute top-6 left-0 right-0 flex justify-center">
+        <Bulbs count={36} />
+      </div>
 
-        {error && (
-          <p className="text-red-400 text-sm text-center">{error}</p>
-        )}
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6 mt-12">
+        <Chip variant="gold" style={{ letterSpacing: '0.35em', fontSize: 13 }}>★ HOST ENTRANCE ★</Chip>
+        <Logo size={100} withTagline />
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-        >
-          {isPending ? 'Checking…' : 'Enter'}
-        </button>
-      </form>
+        <Panel variant="cream" style={{ padding: '24px 28px', width: '100%', marginTop: 12 }}>
+          <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div className="font-bungee" style={{ fontSize: 12, letterSpacing: '0.3em', opacity: 0.7, marginBottom: 8, color: '#3a1f0a' }}>
+                HOST PASSWORD
+              </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+                autoFocus
+                className="font-bungee"
+                style={{
+                  width: '100%', background: '#fff', border: '4px solid #3a1f0a', borderRadius: 8,
+                  padding: '14px 16px', fontSize: 22, color: '#3a1f0a', letterSpacing: '0.4em',
+                  outline: 'none', boxSizing: 'border-box', boxShadow: 'inset 0 2px 0 #00000018',
+                }}
+              />
+            </div>
+            {error && (
+              <div className="font-bungee" style={{ fontSize: 13, color: '#c44b6a', textAlign: 'center' }}>
+                {error}
+              </div>
+            )}
+            <BlockButton type="submit" size="md" style={{ width: '100%' }} disabled={isPending}>
+              {isPending ? 'CHECKING…' : 'ENTER ▶'}
+            </BlockButton>
+          </form>
+        </Panel>
+
+        <p className="font-inter" style={{ fontSize: 12, opacity: 0.6, fontWeight: 500, color: '#f7e9c4' }}>
+          Players don't need a password — just the room code.
+        </p>
+      </div>
+
+      <div className="absolute bottom-24 left-0 right-0 flex justify-center">
+        <Bulbs count={36} />
+      </div>
     </main>
   )
 }
