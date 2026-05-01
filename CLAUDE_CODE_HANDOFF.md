@@ -439,11 +439,42 @@ Don't change `app/host/play/[quizId]/page.tsx` or any actions/server files — t
 
 ---
 
-## 9. Reference files in this project
+## 9. Reference files in this project — READ THESE FIRST
 
-Open `Quiz App.html`, focus the `04 · Game Show '78` artboard. The two source files to lift values from:
+Open `Quiz App.html` in this project. **Sections 05, 06, and 07** of the canvas are the pixel-accurate source of truth for every screen you need to build. When the prose in §5 above conflicts with the artboards, **the artboards win**.
 
-- `game-show.jsx` — every panel, button, badge, color, and shadow spec for the host screen
-- `hosts.jsx` — the SVG avatar component (copy verbatim into TSX)
+| Source file | What's in it | What it maps to |
+|---|---|---|
+| `gs-kit.jsx` | All design tokens (`GS.*` color constants, `FONT.*`), shared chrome (`Bulbs`, `Sunburst`, `CarpetStripe`, `Logo`, `Panel`, `BlockButton`, `Chip`, `ChromeNumber`, `OptionButton`, `ScreenFrame`), and global keyframes (`GSKeyframes`). | Port to `app/globals.css` + `components/gameshow/*.tsx` |
+| `hosts.jsx` | `HostAvatar` SVG component (Mira & Theo) with reactions: `idle` / `correct` / `wrong` / `thinking` / `cheer`. | Copy verbatim into `components/HostAvatar.tsx` |
+| `host-screens.jsx` | All 5 host phases: `HostPre`, `HostLobby`, `HostQuestion`, `HostReveal`, `HostGameOver`. | `app/host/play/[quizId]/host-client.tsx` |
+| `player-screens.jsx` | All 6 player phases: `PlayerNameForm`, `PlayerLobby`, `PlayerQuestion`, `PlayerLocked`, `PlayerReveal` (takes `correct` prop), `PlayerGameOver` + `MobileFrame` wrapper. | `app/play/[roomCode]/player-client.tsx` |
+| `admin-screens.jsx` | `AdminLogin`, `AdminQuizList`, `AdminEditor`. | `app/host/login/page.tsx`, `app/host/page.tsx`, `app/host/edit/[quizId]/page.tsx` |
+| `game-show.jsx` | The original interactive flow (intro + question + reveal). Use only as a secondary reference — the screens in `host-screens.jsx` supersede it. | — |
 
-The host's `question` and `reveal` layouts in particular are pixel-accurate to what I'd build out for the full set — use them as the source of truth for the final design.
+### Recommended workflow
+
+For each screen you implement:
+
+1. Open the matching artboard in `Quiz App.html` (focus mode → fullscreen).
+2. Open the matching JSX file in this project.
+3. Lift values **directly** — exact pixel sizes, colors (use the `GS.*` constants), `boxShadow` strings, `letterSpacing`, `fontSize`, panel paddings, grid templates.
+4. Convert inline-style objects to Tailwind classes only where it's a clean win (colors via `tailwind.config.ts`, simple sizing). Keep `style={{}}` for the chrome-text shadow stacks, repeating-conic-gradient sunburst, and `boxShadow: 'inset 0 0 0 3px ..., 6px 6px 0 ...'` patterns — those don't translate cleanly to utilities and the inline form is more readable.
+5. Replace sample data (`SAMPLE_PLAYERS` from `host-screens.jsx`, `QUIZ_QUESTIONS` from `quiz-data.js`) with real Firestore/socket data.
+6. Wire up the existing event handlers and state machine — **do not** change phase names or socket events.
+
+### Sample data placeholders to swap
+
+When porting, these constants in the JSX become real props/state:
+
+- `SAMPLE_PLAYERS` → `players` from socket
+- `QUIZ_QUESTIONS[2]` → `currentQuestion` from server tick
+- Hardcoded `'7K2P'` room code → `roomCode` from URL/server
+- Hardcoded `'AVERY'` player name → `playerName` from join form
+- Hardcoded scores (`$2,400`) → `players.find(p => p.id === self).score`
+- Hardcoded counts (`6 / 10`, `4 / 6 answered`) → derived from server state
+- `phase = 'question' | 'reveal'` prop on `HostQuestion` → drive from server phase
+
+### Acceptance, revisited
+
+The visual implementation is correct when, with sample data, your localhost screens look indistinguishable from the corresponding artboard at 100% zoom. Use side-by-side screenshots to verify before merging.
