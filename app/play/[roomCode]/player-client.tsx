@@ -83,18 +83,50 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
     socketRef.current?.emit('player:submit-answer', { roomCode, playerId, answerIndex })
   }
 
-  const wrap = (children: React.ReactNode, extra?: React.CSSProperties) => (
-    <main className="min-h-screen relative overflow-hidden" style={{ background: '#3a1f0a', maxWidth: 480, margin: '0 auto', height: '100vh', ...extra }}>
+  // Outer shell: flex column, no overflow:hidden, no fixed height
+  const wrap = (children: React.ReactNode) => (
+    <main style={{
+      background: '#3a1f0a',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      width: '100%',
+      maxWidth: 480,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      boxSizing: 'border-box',
+    }}>
       <Sunburst opacity={0.45} />
-      {children}
+      {/* z-index:1 ensures flow content paints above the absolute Sunburst */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
     </main>
+  )
+
+  // ── joining ────────────────────────────────────────────────────────────────
+  if (phase === 'joining') return wrap(
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="font-bungee animate-gs-shimmer" style={{ color: '#ffd23f', fontSize: 18, letterSpacing: '0.3em' }}>JOINING…</div>
+    </div>
+  )
+
+  // ── error ──────────────────────────────────────────────────────────────────
+  if (phase === 'error') return wrap(
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 24 }}>
+      <div className="font-bungee" style={{ color: '#c44b6a', fontSize: 20, letterSpacing: '0.1em', textAlign: 'center' }}>{errorMsg}</div>
+      <BlockButton size="md" onClick={() => router.push('/')}>← BACK TO HOME</BlockButton>
+    </div>
   )
 
   // ── name form ──────────────────────────────────────────────────────────────
   if (phase === 'name-form') return wrap(
     <>
-      <div className="absolute top-14 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
-      <div style={{ position: 'absolute', inset: '90px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+      <div style={{ paddingTop: 56, display: 'flex', justifyContent: 'center' }}>
+        <Bulbs count={14} size={8} />
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '16px 20px 20px' }}>
         <Logo size={48} />
         <div className="font-bungee" style={{ fontSize: 12, letterSpacing: '0.4em', color: '#ffd23f' }}>JOINING ROOM</div>
         <div className="font-bungee" style={{ fontSize: 72, lineHeight: 1, letterSpacing: '0.1em', color: '#f56b1f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 5px 0 #3a1f0a, 3px 7px 0 #2ec4b6', paintOrder: 'stroke fill' }}>
@@ -116,30 +148,19 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
           </form>
         </Panel>
       </div>
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
+      <div style={{ padding: '0 0 32px', display: 'flex', justifyContent: 'center' }}>
+        <Bulbs count={14} size={8} />
+      </div>
     </>
-  )
-
-  // ── joining ────────────────────────────────────────────────────────────────
-  if (phase === 'joining') return wrap(
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="font-bungee animate-gs-shimmer" style={{ color: '#ffd23f', fontSize: 18, letterSpacing: '0.3em' }}>JOINING…</div>
-    </div>
-  )
-
-  // ── error ──────────────────────────────────────────────────────────────────
-  if (phase === 'error') return wrap(
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 24 }}>
-      <div className="font-bungee" style={{ color: '#c44b6a', fontSize: 20, letterSpacing: '0.1em', textAlign: 'center' }}>{errorMsg}</div>
-      <BlockButton size="md" onClick={() => router.push('/')}>← BACK TO HOME</BlockButton>
-    </div>
   )
 
   // ── lobby ──────────────────────────────────────────────────────────────────
   if (phase === 'lobby') return wrap(
     <>
-      <div className="absolute top-14 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
-      <div style={{ position: 'absolute', inset: '90px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+      <div style={{ paddingTop: 56, display: 'flex', justifyContent: 'center' }}>
+        <Bulbs count={14} size={8} />
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '16px 20px 0' }}>
         <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.4em', color: '#ffd23f' }}>ROOM</div>
         <div className="font-bungee" style={{ fontSize: 52, lineHeight: 1, letterSpacing: '0.1em', color: '#f56b1f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 4px 0 #3a1f0a, 3px 6px 0 #2ec4b6', paintOrder: 'stroke fill' }}>
           {roomCode}
@@ -165,14 +186,16 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
             </div>
           </div>
         )}
-        <div style={{ flex: 1 }} />
+        <div style={{ flex: 1, minHeight: 16 }} />
         <Panel variant="brown" style={{ padding: 14, width: '100%', textAlign: 'center' }}>
           <div className="font-bungee animate-gs-shimmer" style={{ fontSize: 14, color: '#ffd23f', letterSpacing: '0.2em' }}>
             ● WAITING FOR HOST ●
           </div>
         </Panel>
       </div>
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
+      <div style={{ padding: '20px 0 32px', display: 'flex', justifyContent: 'center' }}>
+        <Bulbs count={14} size={8} />
+      </div>
     </>
   )
 
@@ -181,7 +204,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
     const urgent = timeLeft <= 5
     const pct = (timeLeft / questionData.timeLimitSeconds) * 100
     return wrap(
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {/* Timer bar */}
         <div style={{ height: 14, background: '#3a1f0a', borderBottom: '3px solid #ffd23f', flexShrink: 0 }}>
           <div style={{ height: '100%', width: `${pct}%`, background: urgent ? '#c44b6a' : '#f56b1f', transition: 'width 0.25s linear, background 0.3s' }} />
@@ -191,7 +214,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
           <Chip variant="teal" style={{ fontSize: 10, padding: '3px 10px' }}>Q{questionData.questionIndex + 1} / {questionData.totalQuestions}</Chip>
           <ChromeNumber size={32} color={urgent ? '#c44b6a' : '#ffd23f'} stroke={1.5}>{timeLeft}</ChromeNumber>
         </div>
-        {/* Question hint */}
+        {/* Question text */}
         <div style={{ padding: '0 16px', flexShrink: 0 }}>
           <Panel variant="cream" style={{ padding: '12px 14px', textAlign: 'center' }}>
             <div className="font-inter" style={{ fontSize: 15, fontWeight: 600, color: '#3a1f0a', lineHeight: 1.3 }}>
@@ -234,8 +257,10 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
     const picked = selectedAnswer
     return wrap(
       <>
-        <div className="absolute top-14 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
-        <div style={{ position: 'absolute', inset: '90px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <div style={{ paddingTop: 56, display: 'flex', justifyContent: 'center' }}>
+          <Bulbs count={14} size={8} />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '16px 20px 20px' }}>
           <Chip variant="teal" style={{ fontSize: 11 }}>Q{questionData.questionIndex + 1} / {questionData.totalQuestions}</Chip>
           <div
             className="font-bungee animate-gs-pop-center"
@@ -260,7 +285,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
           ) : (
             <div className="font-bungee" style={{ fontSize: 24, color: '#c44b6a', letterSpacing: '0.1em', textShadow: '2px 2px 0 #3a1f0a' }}>TIME&apos;S UP!</div>
           )}
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: 1, minHeight: 16 }} />
           <Panel variant="brown" style={{ padding: 14, width: '100%', textAlign: 'center' }}>
             <div className="font-bungee animate-gs-shimmer" style={{ fontSize: 14, color: '#ffd23f', letterSpacing: '0.2em' }}>
               WAITING FOR OTHERS…
@@ -283,11 +308,10 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
 
     return wrap(
       <>
-        <div className="absolute top-14 left-0 right-0 flex justify-center">
+        <div style={{ paddingTop: 56, display: 'flex', justifyContent: 'center' }}>
           <Bulbs count={14} color={playerCorrect ? '#ffd23f' : '#c44b6a'} size={8} />
         </div>
-        <div style={{ position: 'absolute', inset: '80px 20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, overflowY: 'auto' }}>
-          {/* Verdict */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '16px 20px 16px' }}>
           {playerAnswered && (
             <div
               className="font-bungee animate-gs-pop-center"
@@ -300,7 +324,6 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               {playerCorrect ? '★ CORRECT ★' : 'OH NO!'}
             </div>
           )}
-          {/* Score change */}
           <Panel variant={playerCorrect ? 'gold' : 'cream'} style={{ padding: '10px 20px', textAlign: 'center' }}>
             <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', opacity: 0.7, color: '#3a1f0a' }}>
               {playerCorrect ? 'YOU EARNED' : 'NO POINTS'}
@@ -309,7 +332,6 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               {playerCorrect ? '+$500' : '+$0'}
             </ChromeNumber>
           </Panel>
-          {/* Correct answer */}
           <div style={{ width: '100%' }}>
             <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 6 }}>CORRECT ANSWER</div>
             <div style={{
@@ -327,7 +349,6 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               <div style={{ fontSize: 20 }}>★</div>
             </div>
           </div>
-          {/* Answer distribution */}
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
             {questionData.options.map((opt, i) => {
               const pct = Math.round(((revealData.answerCounts[i] ?? 0) / total) * 100)
@@ -353,7 +374,6 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               )
             })}
           </div>
-          {/* Personal rank */}
           {mine && (
             <Panel variant="brown" style={{ padding: 12, width: '100%' }}>
               <div className="font-bungee" style={{ fontSize: 11, color: '#ffd23f', letterSpacing: '0.3em', marginBottom: 6 }}>YOUR STANDING</div>
@@ -382,15 +402,16 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
     const mine = standings.find(s => s.name === name)
     return wrap(
       <>
-        <div className="absolute top-14 left-0 right-0 flex justify-center"><Bulbs count={14} size={8} /></div>
-        <div style={{ position: 'absolute', inset: '80px 20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, overflowY: 'auto' }}>
+        <div style={{ paddingTop: 56, display: 'flex', justifyContent: 'center' }}>
+          <Bulbs count={14} size={8} />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '16px 20px 16px' }}>
           <div
             className="font-bungee"
             style={{ fontSize: 40, color: '#ffd23f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 5px 0 #3a1f0a, 4px 8px 0 #2ec4b6', paintOrder: 'stroke fill', letterSpacing: '0.05em', transform: 'skewX(-4deg)' }}
           >
             GAME OVER
           </div>
-          {/* Trophy */}
           <div style={{
             width: 100, height: 100, borderRadius: '50%',
             background: `radial-gradient(circle at 30% 30%, #f7e9c4, #ffd23f)`,
@@ -407,7 +428,6 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               </Panel>
             </>
           )}
-          {/* Top 3 */}
           <div style={{ width: '100%', marginTop: 6 }}>
             <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 8 }}>TOP 3</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -427,7 +447,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               ))}
             </div>
           </div>
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: 1, minHeight: 16 }} />
           <BlockButton size="md" style={{ width: '100%' }} onClick={() => router.push('/')}>PLAY AGAIN</BlockButton>
         </div>
       </>

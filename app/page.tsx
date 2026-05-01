@@ -31,7 +31,7 @@ export default function HomePage() {
 
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
         <Chip variant="gold" style={{ letterSpacing: '0.35em', fontSize: 13 }}>★ STEP RIGHT UP ★</Chip>
-        <Logo size={100} />
+        <Logo size={52} />
 
         <Panel variant="cream" style={{ padding: '24px 28px', width: '100%' }}>
           <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
