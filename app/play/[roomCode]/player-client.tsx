@@ -84,7 +84,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
   }
 
   const wrap = (children: React.ReactNode, extra?: React.CSSProperties) => (
-    <main className="min-h-screen relative overflow-hidden" style={{ background: '#3a1f0a', maxWidth: 480, margin: '0 auto', ...extra }}>
+    <main className="relative overflow-hidden" style={{ background: '#3a1f0a', maxWidth: 480, margin: '0 auto', height: '100dvh', ...extra }}>
       <Sunburst opacity={0.45} />
       {children}
     </main>
