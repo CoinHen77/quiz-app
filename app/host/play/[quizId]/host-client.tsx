@@ -139,7 +139,8 @@ export default function HostClient({ quizId }: { quizId: string }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, flex: 1, alignContent: 'start' }}>
               {players.map((p, i) => (
-                <div key={p.id} style={{
+                <div key={p.id} className="animate-pop-in" style={{
+                  animationDelay: `${i * 60}ms`,
                   background: i % 2 === 0 ? '#2ec4b6' : '#f56b1f', color: '#f7e9c4',
                   border: '4px solid #3a1f0a', borderRadius: 8, padding: '12px 14px',
                   boxShadow: 'inset 0 0 0 2px #f7e9c4, 4px 4px 0 #3a1f0a',
@@ -173,7 +174,7 @@ export default function HostClient({ quizId }: { quizId: string }) {
     return (
       <main className="h-screen overflow-hidden relative" style={{ background: '#3a1f0a' }}>
         <Sunburst opacity={0.4} />
-        <div style={{ position: 'absolute', inset: 12, display: 'grid', gridTemplateRows: '1fr 1fr', gap: 12 }}>
+        <div key={questionData.questionIndex} style={{ position: 'absolute', inset: 12, display: 'grid', gridTemplateRows: '1fr 1fr', gap: 12 }}>
           {/* Top row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {/* Hosts panel */}
@@ -182,21 +183,15 @@ export default function HostClient({ quizId }: { quizId: string }) {
                 <Bulbs count={18} size={9} />
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'center', height: '100%', paddingTop: 20 }}>
-                <div style={{ textAlign: 'center' }}>
-                  <HostAvatar who="mira" size={160} reaction="idle" bobOffset={0} />
-                  <div className="font-bungee" style={{ fontSize: 13, color: '#ffd23f', letterSpacing: '0.2em', textShadow: '2px 2px 0 #3a1f0a', marginTop: -4 }}>MIRA</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <HostAvatar who="theo" size={160} reaction="idle" bobOffset={0.5} />
-                  <div className="font-bungee" style={{ fontSize: 13, color: '#ffd23f', letterSpacing: '0.2em', textShadow: '2px 2px 0 #3a1f0a', marginTop: -4 }}>THEO</div>
-                </div>
+                <HostAvatar who="mira" size={160} reaction="idle" bobOffset={0} label="ZACH" />
+                <HostAvatar who="theo" size={160} reaction="idle" bobOffset={0.5} label="JOHN" />
               </div>
               <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
                 <Bulbs count={18} size={9} />
               </div>
             </Panel>
             {/* Question panel */}
-            <Panel variant="cream" style={{ padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Panel variant="cream" className="animate-slide-up" style={{ padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', animationDelay: '80ms' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Chip variant="teal">ROUND {questionData.questionIndex + 1} OF {questionData.totalQuestions}</Chip>
                 <div style={{ display: 'flex', gap: 4 }}>
@@ -252,14 +247,8 @@ export default function HostClient({ quizId }: { quizId: string }) {
                 <Bulbs count={18} size={9} />
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'center', height: '100%', paddingTop: 20 }}>
-                <div style={{ textAlign: 'center' }}>
-                  <HostAvatar who="mira" size={150} reaction="cheer" bobOffset={0} />
-                  <div className="font-bungee" style={{ fontSize: 12, color: '#ffd23f', letterSpacing: '0.2em', textShadow: '2px 2px 0 #3a1f0a', marginTop: -4 }}>MIRA</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <HostAvatar who="theo" size={150} reaction="cheer" bobOffset={0.5} />
-                  <div className="font-bungee" style={{ fontSize: 12, color: '#ffd23f', letterSpacing: '0.2em', textShadow: '2px 2px 0 #3a1f0a', marginTop: -4 }}>THEO</div>
-                </div>
+                <HostAvatar who="mira" size={150} reaction="cheer" bobOffset={0} label="ZACH" />
+                <HostAvatar who="theo" size={150} reaction="cheer" bobOffset={0.5} label="JOHN" />
               </div>
               <div
                 className="font-bungee animate-gs-pop"
@@ -310,7 +299,8 @@ export default function HostClient({ quizId }: { quizId: string }) {
                 const isCorrect = i === revealData.correctIndex
                 const pct = Math.round(((revealData.answerCounts[i] ?? 0) / total) * 100)
                 return (
-                  <div key={i} style={{
+                  <div key={i} className="animate-slide-up" style={{
+                    animationDelay: `${i * 80}ms`,
                     background: '#f7e9c4', color: '#3a1f0a',
                     border: `4px solid ${isCorrect ? '#ffd23f' : '#3a1f0a'}`, borderRadius: 8,
                     boxShadow: isCorrect ? `0 0 16px #ffd23f, 4px 4px 0 #3a1f0a` : '4px 4px 0 #3a1f0a',
@@ -351,7 +341,8 @@ export default function HostClient({ quizId }: { quizId: string }) {
               <div className="font-bungee" style={{ fontSize: 13, color: '#ffd23f', letterSpacing: '0.3em', marginBottom: 10 }}>LEADERBOARD</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                 {top5.map((p, i) => (
-                  <div key={p.rank} style={{
+                  <div key={p.rank} className="animate-slide-up" style={{
+                    animationDelay: `${100 + i * 80}ms`,
                     background: '#f7e9c4', color: '#3a1f0a',
                     border: '3px solid #3a1f0a', borderRadius: 6, padding: '7px 10px',
                     display: 'flex', alignItems: 'center', gap: 10,
@@ -413,7 +404,7 @@ export default function HostClient({ quizId }: { quizId: string }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16 }}>
               {podiumOrder.map((p, i) => p && (
-                <div key={p.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                <div key={p.name} className="animate-pop-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, animationDelay: `${i * 150}ms` }}>
                   <div
                     className="font-bungee"
                     style={{
@@ -446,7 +437,8 @@ export default function HostClient({ quizId }: { quizId: string }) {
             <div className="font-bungee" style={{ fontSize: 13, color: '#ffd23f', letterSpacing: '0.3em', marginBottom: 10 }}>FULL STANDINGS</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
               {standings.map((p, i) => (
-                <div key={p.rank} style={{
+                <div key={p.rank} className="animate-slide-up" style={{
+                  animationDelay: `${i * 60}ms`,
                   background: '#f7e9c4', color: '#3a1f0a',
                   border: '3px solid #3a1f0a', borderRadius: 6, padding: '8px 12px',
                   display: 'flex', alignItems: 'center', gap: 10,

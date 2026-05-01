@@ -161,20 +161,21 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
         <Bulbs count={14} size={8} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '16px 20px 0' }}>
-        <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.4em', color: '#ffd23f' }}>ROOM</div>
-        <div className="font-bungee" style={{ fontSize: 52, lineHeight: 1, letterSpacing: '0.1em', color: '#f56b1f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 4px 0 #3a1f0a, 3px 6px 0 #2ec4b6', paintOrder: 'stroke fill' }}>
+        <div className="font-bungee animate-fade-in" style={{ fontSize: 11, letterSpacing: '0.4em', color: '#ffd23f' }}>ROOM</div>
+        <div className="font-bungee animate-pop-in" style={{ fontSize: 52, lineHeight: 1, letterSpacing: '0.1em', color: '#f56b1f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 4px 0 #3a1f0a, 3px 6px 0 #2ec4b6', paintOrder: 'stroke fill' }}>
           {roomCode}
         </div>
-        <Panel variant="cream" style={{ padding: '16px 18px', width: '100%', textAlign: 'center' }}>
+        <Panel variant="cream" className="animate-slide-up" style={{ padding: '16px 18px', width: '100%', textAlign: 'center', animationDelay: '100ms' }}>
           <div className="font-bungee" style={{ fontSize: 12, letterSpacing: '0.3em', opacity: 0.7, color: '#3a1f0a' }}>YOU JOINED AS</div>
           <div className="font-bungee" style={{ marginTop: 6, fontSize: 26, letterSpacing: '0.12em', color: '#3a1f0a' }}>{name.toUpperCase()}</div>
         </Panel>
         {players.length > 1 && (
           <div style={{ width: '100%' }}>
-            <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 8 }}>OTHER PLAYERS · {players.length - 1}</div>
+            <div className="font-bungee animate-fade-in" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 8 }}>OTHER PLAYERS · {players.length - 1}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {players.filter(p => p.id !== playerId).slice(0, 6).map((p, i) => (
-                <div key={p.id} className="font-bungee" style={{
+                <div key={p.id} className="font-bungee animate-pop-in" style={{
+                  animationDelay: `${i * 70}ms`,
                   background: i % 2 === 0 ? '#2ec4b6' : '#f56b1f', color: '#f7e9c4',
                   border: '3px solid #3a1f0a', borderRadius: 6,
                   boxShadow: 'inset 0 0 0 2px #f7e9c4, 3px 3px 0 #3a1f0a',
@@ -204,19 +205,19 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
     const urgent = timeLeft <= 5
     const pct = (timeLeft / questionData.timeLimitSeconds) * 100
     return wrap(
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <div key={questionData.questionIndex} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {/* Timer bar */}
         <div style={{ height: 14, background: '#3a1f0a', borderBottom: '3px solid #ffd23f', flexShrink: 0 }}>
           <div style={{ height: '100%', width: `${pct}%`, background: urgent ? '#c44b6a' : '#f56b1f', transition: 'width 0.25s linear, background 0.3s' }} />
         </div>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', flexShrink: 0 }}>
+        <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', flexShrink: 0 }}>
           <Chip variant="teal" style={{ fontSize: 10, padding: '3px 10px' }}>Q{questionData.questionIndex + 1} / {questionData.totalQuestions}</Chip>
           <ChromeNumber size={32} color={urgent ? '#c44b6a' : '#ffd23f'} stroke={1.5}>{timeLeft}</ChromeNumber>
         </div>
         {/* Question text */}
         <div style={{ padding: '0 16px', flexShrink: 0 }}>
-          <Panel variant="cream" style={{ padding: '12px 14px', textAlign: 'center' }}>
+          <Panel variant="cream" className="animate-slide-up" style={{ padding: '12px 14px', textAlign: 'center', animationDelay: '60ms' }}>
             <div className="font-inter" style={{ fontSize: 15, fontWeight: 600, color: '#3a1f0a', lineHeight: 1.3 }}>
               {questionData.text}
             </div>
@@ -332,7 +333,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
               {playerCorrect ? '+$500' : '+$0'}
             </ChromeNumber>
           </Panel>
-          <div style={{ width: '100%' }}>
+          <div className="animate-pop-in" style={{ width: '100%', animationDelay: '150ms' }}>
             <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 6 }}>CORRECT ANSWER</div>
             <div style={{
               background: '#ffd23f', color: '#3a1f0a', border: '4px solid #3a1f0a', borderRadius: 10,
@@ -375,7 +376,7 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
             })}
           </div>
           {mine && (
-            <Panel variant="brown" style={{ padding: 12, width: '100%' }}>
+            <Panel variant="brown" className="animate-slide-up" style={{ padding: 12, width: '100%', animationDelay: '350ms' }}>
               <div className="font-bungee" style={{ fontSize: 11, color: '#ffd23f', letterSpacing: '0.3em', marginBottom: 6 }}>YOUR STANDING</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div
@@ -407,12 +408,13 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '16px 20px 16px' }}>
           <div
-            className="font-bungee"
+            className="font-bungee animate-gs-pop-center"
             style={{ fontSize: 40, color: '#ffd23f', WebkitTextStroke: '3px #3a1f0a', textShadow: '0 5px 0 #3a1f0a, 4px 8px 0 #2ec4b6', paintOrder: 'stroke fill', letterSpacing: '0.05em', transform: 'skewX(-4deg)' }}
           >
             GAME OVER
           </div>
-          <div style={{
+          <div className="animate-pop-in" style={{
+            animationDelay: '200ms',
             width: 100, height: 100, borderRadius: '50%',
             background: `radial-gradient(circle at 30% 30%, #f7e9c4, #ffd23f)`,
             border: '6px solid #3a1f0a',
@@ -432,7 +434,8 @@ export default function PlayerClient({ roomCode }: { roomCode: string }) {
             <div className="font-bungee" style={{ fontSize: 11, letterSpacing: '0.3em', color: '#ffd23f', marginBottom: 8 }}>TOP 3</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {standings.slice(0, 3).map((p, i) => (
-                <div key={p.rank} style={{
+                <div key={p.rank} className="animate-slide-up" style={{
+                  animationDelay: `${400 + i * 100}ms`,
                   background: i === 0 ? '#ffd23f' : '#f7e9c4', color: '#3a1f0a',
                   border: '3px solid #3a1f0a', borderRadius: 6, padding: '8px 12px',
                   display: 'flex', alignItems: 'center', gap: 10,
